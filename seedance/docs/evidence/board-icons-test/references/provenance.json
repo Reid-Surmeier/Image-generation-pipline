@@ -214,6 +214,48 @@
       "gif_sha256": "27d3e3bae8b8a6dfea2e7ba9c67908d21fe0a0327bcb9ce470f6d55e61e6f290",
       "mp4_sha256": "854a5b3c2201b8bf1b37552518696cb717b3a6a19345953d52883fbe0524e088",
       "research": "docs/research/ie7-era-browser-tab-motion.md"
+    },
+    "ref-ie7-new-tab-grow.gif": {
+      "game": "Deterministic render of the target toolbar (muse-runs/ie7-newtab, render_animation.py MODE=grow)",
+      "platform": "synthetic reference built from the source toolbar pixels",
+      "year": 2026,
+      "element": "the blank New Tab stub is pressed (100 ms tint), then stretches into the full second tab over 400 ms ease-out while the fresh stub slides right on its edge; the page icon and 'Connecting...' fade in as the tab widens; label swaps to 'Blank Page' in one frame",
+      "kind": "SYNTHESIZED motion reference: the toolbar pixels are the real source, the second tab is a polygon copy of its first tab, the glyphs are Muse-generated; built so the model sees the intended motion on the exact target pixels",
+      "sources": [
+        {
+          "path": "docs/evidence/ie7-new-tab/render_animation.py",
+          "note": "renderer; timings are constants at the top"
+        }
+      ],
+      "frames": 144,
+      "fps": 24,
+      "hold_ms": "1500 hold; 100 press; 400 tween; label swap at 2900; hold to 6000",
+      "cadence_basis": "Chrome 1.0 (2008) tab-strip insert: the new tab's width tweens from the insertion point while neighbours re-lay out (see docs/research/ie7-era-browser-tab-motion.md §3)",
+      "motion_kind": "scale",
+      "motion_kind_basis": "the stub changes size in place into the tab",
+      "gif_sha256": "1af8a490deb1c536e2988319a4869d4b7749c9fef1be54840d448bb469a2ba88",
+      "mp4_sha256": "4b1ec4744f51584fd3d1ad67b0fb00b87d9a59e367242c014ff30112ce9b1639"
+    },
+    "ref-ie7-new-tab-slide.gif": {
+      "game": "Deterministic render of the target toolbar (muse-runs/ie7-newtab, render_animation.py MODE=slide)",
+      "platform": "synthetic reference built from the source toolbar pixels",
+      "year": 2026,
+      "element": "the second tab, already full size, translates out from behind the first tab over 400 ms ease-out, the fresh stub riding on its right edge; the first tab stays in front; label swaps to 'Blank Page' in one frame",
+      "kind": "SYNTHESIZED motion reference: the toolbar pixels are the real source, the second tab is a polygon copy of its first tab, the glyphs are Muse-generated; built so the model sees the intended motion on the exact target pixels",
+      "sources": [
+        {
+          "path": "docs/evidence/ie7-new-tab/render_animation.py",
+          "note": "renderer; timings are constants at the top"
+        }
+      ],
+      "frames": 144,
+      "fps": 24,
+      "hold_ms": "1500 hold; 100 press; 400 tween; label swap at 2900; hold to 6000",
+      "cadence_basis": "a period-adjacent alternative to the width tween: an element moving to its position while keeping its shape",
+      "motion_kind": "translate",
+      "motion_kind_basis": "the tab moves to a new position keeping its shape",
+      "gif_sha256": "2f96da4558713f7b8600be2cc251076da1043a291fc53b60cd79c5d418bc3342",
+      "mp4_sha256": "84302fd5569088a72b336600f9919c4db06b012850acc11f634cdb77890df415"
     }
   },
   "skipped": {

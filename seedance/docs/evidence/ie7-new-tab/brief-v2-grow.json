@@ -1,0 +1,32 @@
+{
+  "grammar": "smooth",
+  "motion_kind": "scale",
+  "motion_basis": "Chrome 1.0 (September 2008) tab-strip insert: a new tab's width tweens from the insertion point while the strip re-lays out; chosen over IE7's own single-frame insert, which reads as no animation. See docs/research/ie7-era-browser-tab-motion.md.",
+  "real_reference": "docs/evidence/board-icons-test/references/ref-ie7-new-tab-grow.gif (deterministic render of this exact toolbar performing the intended motion; provenance.json entry ref-ie7-new-tab-grow.gif, motion_kind scale)",
+  "state_map": {
+    "stub": "ONE tab 'Windows Live' plus the short blank New Tab stub to its right (first frame)",
+    "connecting": "TWO tabs: 'Windows Live' unchanged, plus a second identical white tab to its right showing a grey page icon and the label 'Connecting...', with a fresh stub after it",
+    "titled": "TWO tabs: the second now reads 'Blank Page'; nothing else differs (last frame)"
+  },
+  "source_authority": "The supplied first and last frames are exact endpoint authorities: a flat, thin-outlined, coarse-pixel Internet Explorer 7 style toolbar on pale pink-and-white vertical pinstripes, drawn edge to edge across the frame on a white ground. Left to right: a gold star, a green star with a white plus, one white parallelogram tab with the four-colour Windows flag and the label 'Windows Live', the short blank New Tab stub, a long empty pinstripe run, then a blue house icon with a small black triangle, an orange RSS square with a grey triangle, a grey printer with a triangle, a page icon with the word 'Page' and a triangle, a grey gear with the word 'Tools' and a triangle, and a small » chevron at the far right. The first frame has exactly ONE tab. The last frame has exactly TWO tabs: 'Windows Live' unchanged in its place and, to its right where the stub was, a second tab of identical shape and pure flat white fill with a grey page icon and the label 'Blank Page', followed by a fresh stub. The right-hand icons, their words 'Page' and 'Tools', the stars, the stripes and the bar's border lines are identical in both frames.",
+  "style_lock": [
+    "the 'Windows Live' tab (Windows flag + label) is present, unchanged and in the same place in every frame; the new tab is a second tab to its right, never a replacement",
+    "the new tab is drawn EXACTLY like the first tab: pure flat white face (#FFFFFF, the same white as the first tab's face), one thin grey outline of the same weight, slanted parallelogram sides, no gradient, no gloss, no bevel, no shadow, no grey tint; if the two tab faces differ in brightness the take is wrong",
+    "the right-hand icons and the words 'Page' and 'Tools' stay exactly as they are in every frame; no new words appear anywhere except inside the new tab",
+    "the gold star, green star, pinstripes, and the bar's top and bottom border lines stay pixel-stable",
+    "coarse, crisp pixel edges as in the source; no smoothing, no repainting, no modern restyle"
+  ],
+  "motion": "ONE tab becomes TWO tabs, and the second tab GROWS into place; nothing about the first tab changes. Beat 1, hold: pose one, the exact first frame, held still. Beat 2, press, about 100 ms: pose two, the small blank stub's pale face darkens slightly to a pressed tint; its outline and position do not move. Beat 3, grow, about 400 ms, ease-out: the stub stretches into the second tab in one continuous motion. Its top edge rises from the stub's low top to the same height as the 'Windows Live' tab's top edge, its right edge travels right until the tab is exactly as wide as the 'Windows Live' tab, its face brightens from pale pink to the same pure flat white as the first tab, and a fresh short stub rides along on its right edge, sliding right with it. The left edge of the growing tab stays on the divider line it shares with the first tab. During the second half of the grow the grey page icon and the label 'Connecting...' fade in inside the new tab, clipped by the tab's edges, in the same dark grey sans-serif as 'Windows Live'. Beat 4, hold: pose three, two tabs, 'Windows Live' and 'Connecting...', held perfectly still. Beat 5, swap, one frame: pose four, the label becomes 'Blank Page'; the icon, tab, first tab, stub, stars, icons and stripes are unchanged. Beat 6, hold: pose four held still to the last frame. The reference video shows this exact motion on this exact toolbar; match it.",
+  "timing": "Hold the first frame for the first 25 percent. The press lasts about 100 ms. The tween lasts about 400 ms with an ease-out (fast start, gentle settle) and ends by 35 percent. Hold 'Connecting...' still until about 48 percent, then swap the label to 'Blank Page' in a single frame and hold still to the end. The last frame equals the supplied last frame.",
+  "camera": "Locked orthographic front view of the toolbar, framing identical to the supplied frames. No pan, zoom, roll, parallax, reframing, depth of field or vignette.",
+  "background": "White ground above and below the bar, pale pink-and-white vertical pinstripes inside the bar, exactly as in the endpoint frames; perfectly still, no drift, shimmer or colour change.",
+  "negative_constraints": [
+    "do not relabel, replace, cover, shrink or remove the 'Windows Live' tab; the last frame has two tabs",
+    "do not write 'Connecting...' or 'Blank Page' anywhere except inside the new tab; the words 'Page' and 'Tools' on the right must remain exactly 'Page' and 'Tools'",
+    "do not add gloss, gradient, bevel, shading, shadow or grey tint to any tab face; both faces stay the same flat white",
+    "do not draw a cursor, tooltip, glow, highlight or loading spinner",
+    "do not add, remove or move any icon on the right; do not add extra tabs or objects",
+    "do not let the stripes, border lines or empty areas shimmer, drift or change colour",
+    "do not cut, crossfade or change framing; the only discontinuity is the one-frame label swap"
+  ]
+}
