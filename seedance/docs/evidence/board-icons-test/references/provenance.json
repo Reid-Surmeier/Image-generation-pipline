@@ -3,10 +3,10 @@
   "rule": "Every visible pixel comes from fetched real game graphics (pret decompilation repos). Only cropping, tile placement per the games' own OAM/frame data, documented flips, position offsets, palette application, backdrop color, and 8x NEAREST upscaling were performed. No pixels were drawn or synthesized.",
   "assets": {
     "ref-party-icon-pulse.gif": {
-      "game": "Pok\u00e9mon Emerald",
+      "game": "Pokémon Emerald",
       "platform": "GBA",
       "year": 2004,
-      "element": "Party-menu Pok\u00e9mon icon, the continuous 2-frame healthy-state loop (Pikachu)",
+      "element": "Party-menu Pokémon icon, the continuous 2-frame healthy-state loop (Pikachu)",
       "sources": [
         {
           "url": "https://raw.githubusercontent.com/pret/pokeemerald/master/graphics/pokemon/pikachu/icon.png",
@@ -19,7 +19,7 @@
         100,
         100
       ],
-      "cadence_basis": "pokeemerald src/pokemon_icon.c sAnim_0: ANIMCMD_FRAME(0, 6), ANIMCMD_FRAME(1, 6) \u2014 6 ticks at the GBA's ~59.7275 Hz \u2248 100.4 ms per frame (the full-HP cadence)",
+      "cadence_basis": "pokeemerald src/pokemon_icon.c sAnim_0: ANIMCMD_FRAME(0, 6), ANIMCMD_FRAME(1, 6) — 6 ticks at the GBA's ~59.7275 Hz ≈ 100.4 ms per frame (the full-HP cadence)",
       "motion_kind": "scale",
       "motion_kind_basis": "a two-frame breathing loop: the sprite changes size in place and never travels",
       "deliverables": [
@@ -35,10 +35,10 @@
       ]
     },
     "ref-textbox-arrow-bob.gif": {
-      "game": "Pok\u00e9mon Emerald",
+      "game": "Pokémon Emerald",
       "platform": "GBA",
       "year": 2004,
-      "element": "Message-box down-arrow (\u25bc) vertical bob \u2014 motion, not blink",
+      "element": "Message-box down-arrow (▼) vertical bob — motion, not blink",
       "sources": [
         {
           "url": "https://raw.githubusercontent.com/pret/pokeemerald/master/graphics/fonts/down_arrow.png",
@@ -58,7 +58,7 @@
         2,
         1
       ],
-      "cadence_basis": "pokeemerald src/text.c: sDownArrowYCoords[] = {0, 1, 2, 1}, delay 8 ticks \u2248 133.9 ms per step (533 ms period)",
+      "cadence_basis": "pokeemerald src/text.c: sDownArrowYCoords[] = {0, 1, 2, 1}, delay 8 ticks ≈ 133.9 ms per step (533 ms period)",
       "motion_kind": "translate",
       "motion_kind_basis": "the arrow moves in discrete whole-pixel steps (0/+1/+2/+1) and never rotates or changes shape",
       "deliverables": [
@@ -74,10 +74,10 @@
       ]
     },
     "ref-coin-spin.gif": {
-      "game": "Pok\u00e9mon Trading Card Game",
+      "game": "Pokémon Trading Card Game",
       "platform": "GBC",
       "year": 1998,
-      "element": "Duel coin toss \u2014 the full 8-step spin cycle (face \u2192 edge \u2192 face), metasprite-assembled tile by tile from the game's own frame table",
+      "element": "Duel coin toss — the full 8-step spin cycle (face → edge → face), metasprite-assembled tile by tile from the game's own frame table",
       "sources": [
         {
           "url": "https://raw.githubusercontent.com/pret/poketcg/master/src/gfx/duel/anims/coin.png",
@@ -104,7 +104,7 @@
         67,
         67
       ],
-      "cadence_basis": "poketcg anims3.asm AnimData167: each frame held 4 ticks \u2248 67 ms at ~59.7 Hz",
+      "cadence_basis": "poketcg anims3.asm AnimData167: each frame held 4 ticks ≈ 67 ms at ~59.7 Hz",
       "motion_kind": "rotate",
       "motion_kind_basis": "the coin turns about its vertical axis in place: face, narrowed, edge, narrowed, face",
       "deliverables": [
@@ -120,10 +120,10 @@
       ]
     },
     "ref-item-get-bounce.gif": {
-      "game": "Pok\u00e9mon Emerald",
+      "game": "Pokémon Emerald",
       "platform": "GBA",
       "year": 2004,
-      "element": "Pok\u00e9 Ball open + sparkle presentation (item-get / release idiom): closed \u2192 opening \u2192 open, then the field sparkle plays its real 4-frame cycle above the ball",
+      "element": "Poké Ball open + sparkle presentation (item-get / release idiom): closed → opening → open, then the field sparkle plays its real 4-frame cycle above the ball",
       "sources": [
         {
           "url": "https://raw.githubusercontent.com/pret/pokeemerald/master/graphics/balls/poke.png",
@@ -137,7 +137,7 @@
         {
           "url": "https://raw.githubusercontent.com/pret/pokeemerald/master/graphics/field_effects/pics/sparkle.png",
           "sha256": "f59dd2d325647fc1cd3ad80fdc91eab73e884302c236ffcae3e99ee52afd0970",
-          "note": "96x16 sheet of six 16x16 cells; sparkle pixels are palette index 14 = pure white, so the backdrop is a dark neutral (96,112,96) to keep them visible \u2014 in-game they draw over the overworld scene"
+          "note": "96x16 sheet of six 16x16 cells; sparkle pixels are palette index 14 = pure white, so the backdrop is a dark neutral (96,112,96) to keep them visible — in-game they draw over the overworld scene"
         }
       ],
       "frames": 8,
@@ -151,12 +151,12 @@
         100,
         700
       ],
-      "cadence_basis": "pokeemerald src/pokeball.c ball-open AnimCmd steps at 5 ticks \u2248 84 ms; sparkle cells held ~100 ms (6-cell one-shot cycle, middle 4 cells used)",
+      "cadence_basis": "pokeemerald src/pokeball.c ball-open AnimCmd steps at 5 ticks ≈ 84 ms; sparkle cells held ~100 ms (6-cell one-shot cycle, middle 4 cells used)",
       "motion_kind": "reveal",
       "motion_kind_basis": "a one-shot open-and-present: the ball changes state and a sparkle appears, it does not travel"
     },
     "ref-status-flash.gif": {
-      "game": "Pok\u00e9mon Emerald",
+      "game": "Pokémon Emerald",
       "platform": "GBA",
       "year": 2004,
       "element": "Battle status-condition badge (PSN) in a binary on/off alert blink",
@@ -174,7 +174,7 @@
         134,
         300
       ],
-      "cadence_basis": "Badge art is real Emerald data; in-game the badge itself is static \u2014 the on/off blink is the era's binary alert idiom (era corpus \u00a72: 100\u2013250 ms on/off cycling, nothing eases), applied at the textbox 8-tick quantum (134 ms)",
+      "cadence_basis": "Badge art is real Emerald data; in-game the badge itself is static — the on/off blink is the era's binary alert idiom (era corpus §2: 100–250 ms on/off cycling, nothing eases), applied at the textbox 8-tick quantum (134 ms)",
       "motion_kind": "blink",
       "motion_kind_basis": "a binary on/off substitution with no movement of any kind",
       "deliverables": [
@@ -188,10 +188,36 @@
           "derivation": "Deterministic GIF-to-MP4 media conversion for HTTPS video-reference input; no generated or redrawn frames."
         }
       ]
+    },
+    "ref-ie7-new-tab-insert.gif": {
+      "game": "Windows Internet Explorer 7 (Windows XP)",
+      "platform": "Windows XP, IE7 (2006-10-18 release)",
+      "year": 2008,
+      "element": "Tab row while a new tab is opened from the New Tab stub: cursor on the blank stub, the new tab appears fully formed in one frame at the stub position with the stub pushed right, reads 'Connecting...' for ~0.6 s with the page icon, then swaps to its title, gains the close X, and the row re-lays out",
+      "kind": "screen recording, cropped only (no synthesized pixels); NOT game data — this entry extends the registry to a period browser UI",
+      "sources": [
+        {
+          "url": "https://www.youtube.com/watch?v=PC6flwPVMKg",
+          "title": "Using Tabs in Internet Explorer 7",
+          "uploader": "Noobie",
+          "upload_date": "2008-05-28",
+          "source_sha256": "264e76928d3b67b397ce77b9b1260629361b5300f2ba4b1a3eb4e421eb87c12d",
+          "note": "640x480 15 fps; crop x0-640 y72-108 of the frame (tab row, video is zoomed in this segment), t=63.6-65.6 s, 2x NEAREST upscale to 1280x72, 30 frames"
+        }
+      ],
+      "frames": 30,
+      "fps": 15,
+      "hold_ms": "instant insert at frame 13 (~0.87 s); 'Connecting...' held 9 frames (~0.6 s); title swap at frame 22",
+      "cadence_basis": "read from the recording at its native 15 fps; the insert spans a single frame (<= 67 ms) — no tween in IE7",
+      "motion_kind": "reveal",
+      "motion_kind_basis": "a one-shot state change: the stub becomes a tab and the row re-lays out; nothing travels or scales",
+      "gif_sha256": "27d3e3bae8b8a6dfea2e7ba9c67908d21fe0a0327bcb9ce470f6d55e61e6f290",
+      "mp4_sha256": "854a5b3c2201b8bf1b37552518696cb717b3a6a19345953d52883fbe0524e088",
+      "research": "docs/research/ie7-era-browser-tab-motion.md"
     }
   },
   "skipped": {
-    "ref-card-flip.gif": "No real flip frames obtainable: poketcg's card animations (anims3.asm AnimData158\u2013163) are shuffle translations, not flips, and The Spriters Resource sheet downloads were not fetchable. Nothing was fabricated."
+    "ref-card-flip.gif": "No real flip frames obtainable: poketcg's card animations (anims3.asm AnimData158–163) are shuffle translations, not flips, and The Spriters Resource sheet downloads were not fetchable. Nothing was fabricated."
   },
   "motion_kinds": {
     "translate": "an element moves to a new position, keeping its shape",

@@ -14,6 +14,7 @@ sources, hashes, frame counts, and cadence citations: [`provenance.json`](proven
 | `ref-coin-spin.gif` | Pokémon TCG duel coin, full 8-step spin | pret/poketcg `coin.png` + `anims3.asm` AnimData167/FrameTable79 | 67 ms/frame (4 ticks) |
 | `ref-item-get-bounce.gif` | Emerald Poké Ball open + field sparkle one-shot | pret/pokeemerald `balls/` + `field_effects/pics/sparkle.png` | 84 ms open steps (`pokeball.c`), 100 ms sparkle |
 | `ref-status-flash.gif` | Emerald PSN status badge, binary alert blink | pret/pokeemerald `graphics/interface/status_icons.png` | 134 ms on/off (era binary-blink idiom) |
+| `ref-ie7-new-tab-insert.gif` | IE7 new-tab insert: stub → 'Connecting...' tab → titled tab, one-frame swaps | screen recording YouTube `PC6flwPVMKg` (2008-05-28), cropped only — not game data | 15 fps native; insert 1 frame, 'Connecting...' ~0.6 s |
 
 Skipped: `ref-card-flip.gif` — no real flip frames exist in poketcg (its card anims are
 shuffle translations) and no other real source was fetchable, so none was fabricated.
