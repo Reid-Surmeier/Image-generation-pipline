@@ -2403,9 +2403,18 @@ export const recordOperation = (
       ))
     }
   } else if (operation._tag === "SubmissionUnreconciled") {
+    const diagnostic = operation.providerDiagnostic
+    if (diagnostic !== undefined && (
+      !Number.isInteger(diagnostic.statusCode) || diagnostic.statusCode < 400 || diagnostic.statusCode > 599 ||
+      !(diagnostic.requestId === null || typeof diagnostic.requestId === "string" && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(diagnostic.requestId)) ||
+      !(diagnostic.reason === null || typeof diagnostic.reason === "string" && diagnostic.reason.length <= 240 && !/https?:\/\/|data:|bearer|sk-or-/i.test(diagnostic.reason)) ||
+      hasProviderCredentialMaterial(diagnostic)
+    )) return yield* Effect.fail(new RunRecordError("SECRET_MATERIAL_DETECTED", "Provider diagnostic is not safe to persist."))
+    const reported = diagnostic === undefined ? "" :
+      ` Adapter reported HTTP ${diagnostic.statusCode}${diagnostic.requestId === null ? "" : `, request ${diagnostic.requestId}`}${diagnostic.reason === null ? "" : `: ${diagnostic.reason}`}.`
     stableClassifiedFailure = {
       class: "submission_unreconciled",
-      message: "Provider submission may have started, but no trustworthy result has been reconciled.",
+      message: `Provider submission may have started, but no trustworthy result has been reconciled.${reported}`,
       proof: {
         module: "Run Record",
         observation: "submission result remains unreconciled",

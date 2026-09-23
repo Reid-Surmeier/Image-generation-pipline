@@ -12,8 +12,9 @@ import tempfile
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
-from seedance_icons.openrouter import OpenRouterVideoClient
+from seedance_icons.openrouter import OpenRouterHTTPError, OpenRouterVideoClient
 
 
 class AdapterError(RuntimeError):
@@ -91,9 +92,17 @@ def _wire_request(document: dict[str, Any]) -> dict[str, Any]:
         if hashlib.sha256(body).hexdigest() != digest or actual_media_type not in allowed_media_types:
             raise AdapterError("ADAPTER_NOT_STARTED", "Reference bytes do not match their locked evidence.")
         media_type = str(actual_media_type)
+        provider_url = url.get("providerUrl") if kind == "video" else None
+        if kind == "video":
+            try:
+                parsed = urlsplit(provider_url) if isinstance(provider_url, str) else None
+            except ValueError:
+                parsed = None
+            if parsed is None or parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.query or parsed.fragment:
+                raise AdapterError("ADAPTER_NOT_STARTED", "Video reference has no locked public HTTPS provider URL.")
         provider_reference = {
             "type": f"{kind}_url",
-            f"{kind}_url": {"url": f"data:{media_type};base64,{encoded}"},
+            f"{kind}_url": {"url": provider_url if kind == "video" else f"data:{media_type};base64,{encoded}"},
         }
         if kind == "image":
             provider_reference["frame_type"] = "first_frame" if index == 0 else "last_frame"
@@ -131,6 +140,24 @@ def _cost(value: dict[str, Any]) -> dict[str, str]:
     return {"state": "actual", "actual_cost_usd": actual}
 
 
+def _provider_diagnostic(error: OpenRouterHTTPError) -> dict[str, Any]:
+    record = error.to_record()
+    headers = record.get("response_headers", {})
+    request_id = headers.get("x-request-id") or headers.get("x-openrouter-request-id")
+    provider_error = record.get("provider_error")
+    detail = provider_error.get("error") if isinstance(provider_error, dict) else None
+    reason = detail.get("message") if isinstance(detail, dict) else detail
+    if not isinstance(reason, str) and isinstance(provider_error, dict):
+        reason = provider_error.get("message")
+    if isinstance(reason, str):
+        reason = re.sub(r"https?://[^\s\"']+", "<URL>", reason)
+    if not isinstance(request_id, str) or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}", request_id) is None:
+        request_id = None
+    if not isinstance(reason, str) or len(reason) > 240 or re.search(r"(?i)https?://|data:|bearer|sk-or-", reason):
+        reason = None
+    return {"status_code": record["status_code"], "request_id": request_id, "reason": reason}
+
+
 def execute(document: Any, *, client: Any) -> dict[str, Any]:
     request = _record(document, "Adapter input is not an object.")
     model = request.get("model")
@@ -163,6 +190,7 @@ def execute(document: Any, *, client: Any) -> dict[str, Any]:
 
 
 def main() -> int:
+    provider_diagnostic = None
     try:
         document = json.load(sys.stdin)
     except (json.JSONDecodeError, UnicodeDecodeError):
@@ -181,6 +209,9 @@ def main() -> int:
                 result = execute(document, client=client)
             except AdapterError as caught:
                 error = caught
+            except OpenRouterHTTPError as caught:
+                error = AdapterError("PROVIDER_AMBIGUOUS", "The provider rejected the request; do not resubmit this Run.")
+                provider_diagnostic = _provider_diagnostic(caught)
             except Exception:  # noqa: BLE001 - post-dispatch uncertainty must fail closed without leaking diagnostics
                 error = AdapterError("PROVIDER_AMBIGUOUS", "The provider outcome is unknown; do not resubmit.")
             else:
@@ -188,7 +219,10 @@ def main() -> int:
                 return 0
             finally:
                 client.close()
-    print(json.dumps({"adapter_error": {"code": error.code, "message": str(error)}}, sort_keys=True, separators=(",", ":")))
+    detail = {"code": error.code, "message": str(error)}
+    if provider_diagnostic is not None:
+        detail["provider_diagnostic"] = provider_diagnostic
+    print(json.dumps({"adapter_error": detail}, sort_keys=True, separators=(",", ":")))
     return 2
 
 

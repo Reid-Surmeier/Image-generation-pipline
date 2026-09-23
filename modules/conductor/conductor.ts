@@ -503,6 +503,9 @@ const classifyGenerationFailure = (
       _tag: "SubmissionUnreconciled",
       runId,
       operationId: "conductor-submission-unreconciled",
+      ...(error instanceof GenerationError && error.providerDiagnostic !== undefined
+        ? { providerDiagnostic: error.providerDiagnostic }
+        : {}),
     }), "The unreconciled submission state could not be reconciled after a local persistence interruption.", objective,
     lastDurableView, "Generation")
     if (persistence._tag === "PersistenceInterrupted") return persistence

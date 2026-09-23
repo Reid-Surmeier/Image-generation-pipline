@@ -201,6 +201,7 @@ export type RecordOperation =
       _tag: "SubmissionUnreconciled"
       runId: string
       operationId: string
+      providerDiagnostic?: Readonly<{ statusCode: number; requestId: string | null; reason: string | null }>
     }>
 
 export type RunRecordPhase =

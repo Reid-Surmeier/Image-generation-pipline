@@ -45,7 +45,7 @@ export const pollSeedance: (
   submissionEvidence: GenerationProviderEvidence,
 ) => Effect.Effect<SeedancePollResult, GenerationError, GenerationAdapterService> = pollSeedanceGeneration
 
-export { GenerationError } from "./errors.js"
+export { GenerationError, type ProviderDiagnostic } from "./errors.js"
 export type { GenerationErrorCode } from "./errors.js"
 export { GenerationAdapter } from "./types.js"
 export { inheritedQwenAdapter, QWEN_ADAPTER_PROTOCOL_VERSION } from "./inherited-qwen-adapter.js"

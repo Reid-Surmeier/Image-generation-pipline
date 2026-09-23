@@ -282,12 +282,13 @@ test("submits exact Seedance video once and polls only the same sanitized job id
       submitCalls += 1
       const destination = (
         candidate.payload.input_references as ReadonlyArray<{
-          video_url: { url: { applicationPath: string; bytesBase64: string; mediaType: string; sha256: string } }
+          video_url: { url: { applicationPath: string; bytesBase64: string; mediaType: string; sha256: string; providerUrl: string } }
         }>
       )[0]!.video_url.url
       assert.equal(destination.applicationPath, locked.applicationPath)
       assert.equal(destination.sha256, locked.sha256)
       assert.equal(destination.mediaType, "video/mp4")
+      assert.equal(destination.providerUrl, "https://example.com/neutral.mp4")
       assert.deepEqual(Buffer.from(destination.bytesBase64, "base64"), Buffer.from(snapshot.bytes))
       return {
         provider: "openrouter" as const,

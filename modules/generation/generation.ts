@@ -393,6 +393,7 @@ export const prepareGeneration = (
             bytesBase64: Buffer.from(supplied.bytes).toString("base64"),
             mediaType: supplied.mediaType,
             sha256: supplied.sha256,
+            ...(locked.providerUrl === undefined ? {} : { providerUrl: locked.providerUrl }),
           },
         },
       }

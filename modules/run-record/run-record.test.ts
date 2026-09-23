@@ -2086,6 +2086,30 @@ test("possibly-spent blocked Runs can reconcile only and never create a correcti
   assert.equal(error.code, "LINK_NOT_ALLOWED")
 })
 
+test("unreconciled Seedance submission keeps a safe HTTP rejection diagnostic", async () => {
+  const memory = await memoryHarness()
+  const provide = <Success, Error>(effect: Effect.Effect<Success, Error, RunRecordStoreService | RunRecordClockService>) =>
+    effect.pipe(Effect.provide(memory.layer), Effect.provideService(RunRecordClock, clock))
+  const planned = await plannedRun()
+  const reserved = await Effect.runPromise(provide(reserve(reservationFor(planned))))
+  await Effect.runPromise(provide(record({ _tag: "SubmissionMayHaveStarted", runId: reserved.runId, operationId: "submit" })))
+  const rejected = await Effect.runPromise(Effect.flip(provide(record({
+    _tag: "SubmissionUnreconciled", runId: reserved.runId, operationId: "reject-unsafe",
+    providerDiagnostic: { statusCode: 400, requestId: "req-1", reason: "Bearer sk-or-v1-private" },
+  }))))
+  assert.equal(rejected.code, "SECRET_MATERIAL_DETECTED")
+  const blocked = await Effect.runPromise(provide(record({
+    _tag: "SubmissionUnreconciled", runId: reserved.runId, operationId: "reject-safe",
+    providerDiagnostic: { statusCode: 400, requestId: "req-1", reason: "video reference is too short" },
+  })))
+  assert.match(blocked.view.finding?.message ?? "", /HTTP 400, request req-1: video reference is too short/)
+  assert.equal(blocked.view.retryState, "reconcile-only")
+  const failure = JSON.parse(Buffer.from(await Effect.runPromise(
+    readEvidence(reserved.runId, "failure.json").pipe(Effect.provide(memory.layer)),
+  )).toString("utf8")) as { message: string }
+  assert.match(failure.message, /HTTP 400, request req-1: video reference is too short/)
+})
+
 test("derives one honest unreconciled-submission finding and refuses caller-authored Generation causes", async () => {
   const forgedClasses = [
     "ambiguous_provider_timeout",

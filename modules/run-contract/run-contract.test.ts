@@ -424,8 +424,13 @@ test("requires Assembly and a locked image baseline when a Qwen plan is declared
 
 test("locks an explicit no-Assembly proof and expected media into a Seedance Run Request", async () => {
   const run = await compileFixture(makeFixture("seedance-video"))
+  const changedUrl = await compileFixture(makeFixture("seedance-video", { objective: (objective) => {
+    (objective.references as Array<Record<string, unknown>>)[0]!.providerUrl = "https://example.com/changed.mp4"
+  } }))
 
   assert.equal(run.request.mode, "seedance-video")
+  assert.equal(run.request.references[0]?.providerUrl, "https://example.com/neutral.mp4")
+  assert.notEqual(run.requestSha256, changedUrl.requestSha256)
   assert.equal("assemblyPlan" in run.request, false)
   assert.deepEqual(run.request.videoPlan, {
     assembly: {

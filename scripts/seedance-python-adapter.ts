@@ -2,13 +2,22 @@ import { spawnSync } from "node:child_process"
 import { createHash } from "node:crypto"
 import { Effect } from "effect"
 
-import { GenerationError, type GenerationAdapterService, type GenerationProviderEvidence, type PreparedGeneration, type SeedancePollResult, type SeedanceSubmission } from "../modules/generation/index.js"
+import { GenerationError, type GenerationAdapterService, type GenerationProviderEvidence, type PreparedGeneration, type ProviderDiagnostic, type SeedancePollResult, type SeedanceSubmission } from "../modules/generation/index.js"
 
 const sha256 = (value: Uint8Array): string => createHash("sha256").update(value).digest("hex")
 const record = (value: unknown): Record<string, unknown> | undefined =>
   value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : undefined
 const exactKeys = (value: Record<string, unknown>, keys: ReadonlyArray<string>): boolean =>
   Reflect.ownKeys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key))
+
+const providerDiagnostic = (value: unknown): ProviderDiagnostic | undefined => {
+  const item = record(value)
+  if (item === undefined || !exactKeys(item, ["status_code", "request_id", "reason"]) ||
+      typeof item.status_code !== "number" || !Number.isInteger(item.status_code) || item.status_code < 400 || item.status_code > 599 ||
+      !(item.request_id === null || typeof item.request_id === "string" && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(item.request_id)) ||
+      !(item.reason === null || typeof item.reason === "string" && item.reason.length <= 240 && !/https?:\/\/|data:|bearer|sk-or-/i.test(item.reason))) return undefined
+  return { statusCode: item.status_code, requestId: item.request_id, reason: item.reason }
+}
 
 const evidence = (value: unknown): GenerationProviderEvidence => {
   const item = record(value)
@@ -44,9 +53,13 @@ const exchange = (toolRoot: string, document: Record<string, unknown>): Record<s
   if (result.status !== 0) {
     const failure = record(response?.adapter_error)
     const code = failure?.code
-    if (exactKeys(failure ?? {}, ["code", "message"]) &&
+    if ((exactKeys(failure ?? {}, ["code", "message"]) || exactKeys(failure ?? {}, ["code", "message", "provider_diagnostic"])) &&
         (code === "ADAPTER_NOT_STARTED" || code === "ADAPTER_RESULT_INVALID" || code === "PROVIDER_AMBIGUOUS")) {
-      throw new GenerationError(code, "The Seedance Python host returned a classified safe failure.")
+      const diagnostic = failure?.provider_diagnostic === undefined ? undefined : providerDiagnostic(failure.provider_diagnostic)
+      if (failure?.provider_diagnostic !== undefined && diagnostic === undefined) {
+        throw new GenerationError("PROVIDER_AMBIGUOUS", "The Seedance Python host returned malformed provider diagnostics.")
+      }
+      throw new GenerationError(code, "The Seedance Python host returned a classified safe failure.", diagnostic)
     }
     throw new GenerationError(document.operation === "submit" ? "PROVIDER_AMBIGUOUS" : "ADAPTER_RESULT_INVALID", "The Seedance Python host stopped without closed evidence.")
   }

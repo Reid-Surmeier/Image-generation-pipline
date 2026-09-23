@@ -260,6 +260,7 @@ const decodeCandidates = (objective: JsonRecord): ReadonlyArray<ReferenceCandida
       kind: kind as MediaKind,
       authorityReason: stringField(reference, "authorityReason"),
       payloadDestination: stringField(reference, "payloadDestination"),
+      ...(reference.providerUrl === undefined ? {} : { providerUrl: stringField(reference, "providerUrl") }),
       ...(declared === undefined
         ? {}
         : { declaredMedia: decodeMedia(recordField(reference, "declaredMedia")) }),

@@ -5,6 +5,8 @@
 - Errors: `modules/generation/errors.ts`
 - Acceptance: `modules/generation/generation.test.ts`, `modules/generation/inherited-qwen-adapter.test.ts`, `modules/generation/python-qwen-kernel-transport.test.ts`, `tests/test_qwen_adapter.py`, and `tests/test_qwen_adapter_host.py`
 
+Seedance video payloads bind both local MP4 bytes/hash and the declared HTTPS URL. The adapter sends the URL because OpenRouter rejects inline MP4 data URLs.
+
 `inheritedQwenAdapter` is the version-1 language-neutral seam for the retained
 Python Qwen kernel. It converts only the already-validated immutable Generation
 payload into a closed JSON request, preserves the exact OpenRouter provider,

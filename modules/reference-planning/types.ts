@@ -58,6 +58,7 @@ export type ReferenceCandidate = Readonly<{
   kind: MediaKind
   authorityReason: string
   payloadDestination: string
+  providerUrl?: string
   declaredMedia?: MediaProperties
 }>
 
@@ -77,6 +78,7 @@ export type LockedReference = Readonly<{
   mediaType: ReferenceMediaType
   authorityReason: string
   payloadDestination: string
+  providerUrl?: string
   inspectedMedia: MediaInspection
 }>
 

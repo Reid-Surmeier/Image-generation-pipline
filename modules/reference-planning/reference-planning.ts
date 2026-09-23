@@ -523,6 +523,22 @@ export const planReferenceInputs = (
         candidate.path,
       ))
     }
+    if (input.mode === "seedance-video" && candidate.kind === "video") {
+      let safeUrl = false
+      try {
+        const url = new URL(candidate.providerUrl ?? "")
+        safeUrl = url.protocol === "https:" && url.hostname.length > 0 && !url.username && !url.password &&
+          !url.search && !url.hash && url.toString() === candidate.providerUrl &&
+          !/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/i.test(url.hostname)
+      } catch { /* invalid URL */ }
+      if (!safeUrl) return yield* Effect.fail(new ReferencePlanningError(
+        "PAYLOAD_DESTINATION_INVALID", "Seedance video references require a public HTTPS URL without credentials or query parameters.", candidate.path,
+      ))
+    } else if (candidate.providerUrl !== undefined) {
+      return yield* Effect.fail(new ReferencePlanningError(
+        "PAYLOAD_DESTINATION_INVALID", "Only Seedance video references may declare a provider URL.", candidate.path,
+      ))
+    }
 
     const snapshot = yield* files.read(candidate.path).pipe(
       Effect.mapError((error) => error.code === "APPLICATION_PATH_MISSING"
@@ -600,6 +616,7 @@ export const planReferenceInputs = (
       mediaType: inspectedMedia.mediaType,
       authorityReason: candidate.authorityReason,
       payloadDestination: candidate.payloadDestination,
+      ...(candidate.providerUrl === undefined ? {} : { providerUrl: candidate.providerUrl }),
       inspectedMedia,
     }))
   }

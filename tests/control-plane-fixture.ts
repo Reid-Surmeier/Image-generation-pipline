@@ -372,6 +372,7 @@ export const makeFixture = (
         kind,
         authorityReason: "Approved neutral fixture evidence.",
         payloadDestination,
+        ...(isVideo ? { providerUrl: "https://example.com/neutral.mp4" } : {}),
         declaredMedia: isVideo
           ? { width: 64, height: 48, durationSeconds: 0.2 }
           : { width: 1, height: 1 },

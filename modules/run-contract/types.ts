@@ -97,6 +97,7 @@ export type CanonicalRunRequest = Readonly<{
     mediaType: "image/png" | "image/jpeg" | "image/webp" | "video/mp4" | "application/vnd.qwen.rgba+json"
     authorityReason: string
     payloadDestination: string
+    providerUrl?: string
     inspectedMedia: Readonly<{
       kind: "image" | "video"
       mediaType: "image/png" | "image/jpeg" | "image/webp" | "video/mp4" | "application/vnd.qwen.rgba+json"

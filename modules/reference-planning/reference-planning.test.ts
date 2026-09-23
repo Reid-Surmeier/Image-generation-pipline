@@ -237,6 +237,7 @@ test("locks real video bytes and refuses falsified declared properties", async (
         kind: "video" as const,
         authorityReason: "Approved neutral fixture evidence.",
         payloadDestination: "/input_references/0/video_url/url",
+        providerUrl: "https://example.com/neutral.mp4",
         declaredMedia: { width: 999, height: 48, durationSeconds: 0.2 },
       },
     ],
@@ -251,6 +252,30 @@ test("locks real video bytes and refuses falsified declared properties", async (
   if (result._tag === "Failure") {
     assert.match(String(result.cause), /DECLARED_MEDIA_MISMATCH/)
   }
+})
+
+test("Seedance motion requires a locked public HTTPS URL", async () => {
+  const fixture = makeFixture("seedance-video")
+  const snapshot = await Effect.runPromise(fixture.files.read("references/neutral.mp4"))
+  const base = {
+    mode: "seedance-video" as const,
+    referenceRoots: ["references"],
+    requirements: [{ slot: "motion", kind: "video" as const, payloadDestination: "/input_references/0/video_url/url" }],
+    candidates: [{ slot: "motion", path: snapshot.applicationPath, sha256: sha256(snapshot.bytes),
+      kind: "video" as const, authorityReason: "Approved neutral fixture evidence.",
+      payloadDestination: "/input_references/0/video_url/url" }],
+  }
+  const provide = <A, E>(effect: Effect.Effect<A, E, typeof ApplicationFiles.Service | typeof MediaInspector.Service>) =>
+    effect.pipe(Effect.provideService(ApplicationFiles, fixture.files), Effect.provideService(MediaInspector, byteMediaInspector))
+  for (const providerUrl of [undefined, "http://example.com/video.mp4", "data:video/mp4;base64,abc", "https://user:pass@example.com/video.mp4"]) {
+    const candidates = base.candidates.map((candidate) => ({ ...candidate, ...(providerUrl === undefined ? {} : { providerUrl }) }))
+    const failure = await Effect.runPromise(Effect.flip(provide(planReferences({ ...base, candidates }))))
+    assert.equal(failure.code, "PAYLOAD_DESTINATION_INVALID")
+  }
+  const valid = await Effect.runPromise(provide(planReferences({
+    ...base, candidates: [{ ...base.candidates[0]!, providerUrl: "https://example.com/neutral.mp4" }],
+  })))
+  assert.equal(valid.references[0]?.providerUrl, "https://example.com/neutral.mp4")
 })
 
 test("refuses two references assigned to the same provider payload destination", async () => {
