@@ -84,7 +84,7 @@ behavior, timing, spatial permissions, cancel/restart behavior, and `historicalF
 - Text-to-motion: prompt alone; useful only when exact source identity is not required.
 - First-frame: preserve an icon as the opening state.
 - First/last-frame: constrain a transition or attempt a loop.
-- Reference motion: image, video, or audio references guide a separate run.
+- Reference motion: a video plus optional still images in ordered `input_references` guide a separate run; no exact first frame is promised.
 - Experimental mixed mode: anchor frames plus references. OpenRouter documents frame images as
   taking precedence, so this is rejected unless explicitly enabled and recorded as uncertain.
 

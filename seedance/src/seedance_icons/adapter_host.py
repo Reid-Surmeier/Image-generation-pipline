@@ -71,6 +71,7 @@ def _wire_request(document: dict[str, Any]) -> dict[str, Any]:
     }
     input_references: list[dict[str, Any]] = []
     frame_images: list[dict[str, Any]] = []
+    has_video = any(isinstance(reference, dict) and set(reference) == {"video_url"} for reference in references)
     for index, reference in enumerate(references):
         item = _record(reference, "A prepared reference is malformed.")
         if set(item) == {"video_url"}:
@@ -104,7 +105,7 @@ def _wire_request(document: dict[str, Any]) -> dict[str, Any]:
             "type": f"{kind}_url",
             f"{kind}_url": {"url": provider_url if kind == "video" else f"data:{media_type};base64,{encoded}"},
         }
-        if kind == "image":
+        if kind == "image" and not has_video:
             provider_reference["frame_type"] = "first_frame" if index == 0 else "last_frame"
             frame_images.append(provider_reference)
         else:

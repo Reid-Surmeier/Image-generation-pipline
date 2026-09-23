@@ -121,3 +121,27 @@ def test_submit_http_rejection_redacts_url_but_keeps_reason() -> None:
     assert _provider_diagnostic(OpenRouterHTTPError("submit", "/videos", response))["reason"] == (
         "Invalid reference URL: <URL> is too small"
     )
+
+
+def test_mixed_video_and_still_use_ordered_input_references_only() -> None:
+    still = request("submit", "image")["payload"]["input_references"][0]
+    motion = request("submit", "video")["payload"]["input_references"][0]
+
+    class SubmitClient:
+        def __init__(self) -> None:
+            self.sent = None
+
+        def submit(self, value: dict) -> dict:
+            self.sent = value
+            return {"id": "job-1", "status": "queued"}
+
+    for ordered in ([still, motion], [motion, still]):
+        document = request("submit", "video")
+        document["payload"]["input_references"] = ordered
+        client = SubmitClient()
+        execute(document, client=client)
+        assert "frame_images" not in client.sent
+        assert [item["type"] for item in client.sent["input_references"]] == [
+            "image_url" if item is still else "video_url" for item in ordered
+        ]
+        assert all("frame_type" not in item for item in client.sent["input_references"])

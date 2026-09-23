@@ -555,9 +555,12 @@ export const submitSeedanceGeneration = (
       validatedPrepared.request.mode !== "seedance-video" ||
       validatedPrepared.request.videoPlan?.assembly.required !== false ||
       validatedPrepared.request.videoPlan.assembly.pixelOwnership !== "none-authoritative" ||
-      !(validatedPrepared.request.references.every((reference) =>
-        reference.kind === "video" && reference.mediaType === "video/mp4" &&
-        /\/video_url\/url$/.test(reference.payloadDestination)) ||
+      !((validatedPrepared.request.references.some((reference) => reference.kind === "video") &&
+        validatedPrepared.request.references.every((reference) => reference.kind === "video"
+          ? reference.mediaType === "video/mp4" && /\/video_url\/url$/.test(reference.payloadDestination)
+          : reference.kind === "image" &&
+            ["image/png", "image/jpeg", "image/webp", "application/vnd.qwen.rgba+json"].includes(reference.mediaType) &&
+            /\/image_url\/url$/.test(reference.payloadDestination))) ||
         inferredMotionWaiver(validatedPrepared.request.references))
     ) {
       return yield* Effect.fail(new GenerationError(

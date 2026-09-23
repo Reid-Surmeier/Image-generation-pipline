@@ -540,6 +540,75 @@ test("submits exact Seedance video once and polls only the same sanitized job id
   assert.equal(submitCalls, 1)
 })
 
+test("submits a locked Seedance video and still together", async () => {
+  const stillBytes = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nKsAAAAASUVORK5CYII=", "base64")
+  const stillPath = "references/neutral.png"
+  const stillRequirement = { slot: "look", kind: "image", payloadDestination: "/input_references/1/image_url/url" }
+  const fixture = makeFixture("seedance-video", {
+    contract: (contract) => {
+      const procedure = (contract.procedures as Array<Record<string, unknown>>).find((item) => item.id === "seedance-neutral")!
+      const requirements = procedure.referenceRequirements as Array<unknown>
+      requirements.push(stillRequirement)
+    },
+    objective: (objective) => {
+      (objective.references as Array<unknown>).push({
+        ...stillRequirement,
+        path: stillPath,
+        sha256: sha256(stillBytes),
+        authorityReason: "The owner's exact visual reference.",
+        declaredMedia: { width: 1, height: 1 },
+      })
+    },
+    files: (files) => files.set(stillPath, stillBytes),
+  })
+  const decision = await Effect.runPromise(plan({ objectivePath: fixture.objectivePath }).pipe(
+    Effect.provideService(ApplicationFiles, fixture.files),
+    Effect.provideService(MediaInspector, byteMediaInspector),
+    Effect.provideService(PlanningIdentity, fixture.identity),
+  ))
+  assert.equal(decision._tag, "Planned")
+  if (decision._tag !== "Planned") return
+  const references = await Promise.all(decision.run.request.references.map(async (locked) => ({
+    slot: locked.slot,
+    applicationPath: locked.applicationPath,
+    sha256: locked.sha256,
+    payloadDestination: locked.payloadDestination,
+    mediaType: locked.mediaType,
+    bytes: (await Effect.runPromise(fixture.files.read(locked.applicationPath))).bytes,
+  })))
+  const prepared = await Effect.runPromise(prepare(decision.run.request, references))
+  assert.deepEqual(prepared.request.references.map((reference) => reference.kind), ["image", "video"])
+  assert.deepEqual((prepared.payload.input_references as Array<Record<string, unknown>>).map((entry) => Object.keys(entry)[0]), [
+    "video_url", "image_url",
+  ])
+  const memory = await Effect.runPromise(makeMemoryRunRecordHarness())
+  const clock = { now: () => Effect.succeed("2026-08-30T12:00:00.000Z") }
+  const reserved = await Effect.runPromise(reserve({ plannedRun: decision.run, payloadSha256: prepared.payloadSha256 }).pipe(
+    Effect.provide(memory.layer), Effect.provideService(RunRecordClock, clock),
+  ))
+  const marker = await Effect.runPromise(record({
+    _tag: "SubmissionMayHaveStarted", runId: reserved.runId, operationId: "mixed-seedance-submit",
+  }).pipe(Effect.provide(memory.layer), Effect.provideService(RunRecordClock, clock)))
+  assert.equal(marker._tag, "SubmissionPermitIssued")
+  if (marker._tag !== "SubmissionPermitIssued") return
+  let submitted = false
+  const response = Buffer.from('{"job_id":"mixed-job","status":"submitted"}')
+  const adapter: GenerationAdapterService = {
+    invoke: () => Effect.die("not an image run"),
+    submitSeedance: (candidate) => Effect.sync(() => {
+      submitted = true
+      assert.equal((candidate.payload.input_references as Array<unknown>).length, 2)
+      return { provider: "openrouter" as const, model: candidate.request.model, jobId: "mixed-job",
+        providerEvidence: { mediaType: "application/json" as const, body: response, sha256: sha256(response) } }
+    }),
+  }
+  const result = await Effect.runPromise(submitSeedance(prepared, marker.permit).pipe(
+    Effect.provideService(GenerationAdapter, adapter), Effect.provide(memory.layer),
+  ))
+  assert.equal(result.jobId, "mixed-job")
+  assert.equal(submitted, true)
+})
+
 test("refuses a Seedance payload omission before consuming authority or calling the adapter", async () => {
   const fixture = makeFixture("seedance-video")
   const decision = await Effect.runPromise(plan({ objectivePath: fixture.objectivePath }).pipe(
