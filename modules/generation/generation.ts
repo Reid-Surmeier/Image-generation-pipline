@@ -82,14 +82,14 @@ const normalizeAdapterResult = (value: unknown): GenerationResult | undefined =>
 const isNormalizedRgbaRaster = (body: Uint8Array): boolean => {
   try {
     const source = Buffer.from(body).toString("utf8")
-    if (hasDuplicateJsonKeys(source)) return false
     const value = JSON.parse(source) as Record<string, unknown>
     if (
       value === null || typeof value !== "object" || Array.isArray(value) ||
       Object.keys(value).sort().join(",") !== "height,pixels,width"
     ) return false
     const { width, height, pixels } = value
-    return source === canonicalize(value) &&
+    // Exact serialization of the closed object rejects duplicate keys and noncanonical bytes.
+    return source === JSON.stringify({ height, pixels, width }) &&
       typeof width === "number" && Number.isSafeInteger(width) && width > 0 &&
       typeof height === "number" && Number.isSafeInteger(height) && height > 0 &&
       Array.isArray(pixels) && pixels.length === width * height * 4 &&
