@@ -3,7 +3,8 @@ import tempfile
 import os
 import unittest
 import urllib.error
-from io import BytesIO
+from contextlib import redirect_stderr
+from io import BytesIO, StringIO
 from pathlib import Path
 from unittest import mock
 
@@ -69,10 +70,10 @@ class OpenRouterImageClientTests(unittest.TestCase):
             )
 
         client = OpenRouterImageClient("test-key", opener=open_request)
-        response = client.generate({"model": "qwen/qwen-image-3-pro", "prompt": "golf"})
+        response = client.generate({"model": "meta/muse-image", "prompt": "neutral object"})
 
         self.assertEqual(captured["authorization"], "Bearer test-key")
-        self.assertEqual(captured["body"]["prompt"], "golf")
+        self.assertEqual(captured["body"]["prompt"], "neutral object")
         self.assertEqual(captured["timeout"], 180)
         self.assertEqual(response["usage"]["cost"], 0.04)
 
@@ -86,7 +87,7 @@ class OpenRouterImageClientTests(unittest.TestCase):
         client = OpenRouterImageClient(
             "test-key", opener=open_request, timeout=600.5
         )
-        client.generate({"model": "qwen/qwen-image-3-pro", "prompt": "golf"})
+        client.generate({"model": "meta/muse-image", "prompt": "neutral object"})
 
         self.assertEqual(captured["timeout"], 600.5)
 
@@ -140,8 +141,18 @@ class OpenRouterImageClientTests(unittest.TestCase):
         client = OpenRouterImageClient("never-print-this-key", opener=fail_request)
 
         with self.assertRaisesRegex(RuntimeError, "No endpoints found for this model") as raised:
-            client.generate({"model": "qwen/qwen-image-3-pro", "prompt": "golf"})
+            client.generate({"model": "meta/muse-image", "prompt": "neutral object"})
         self.assertNotIn("never-print-this-key", str(raised.exception))
+
+    def test_http_diagnostic_reports_only_status_and_fixed_category(self):
+        def fail_request(request, *, timeout):
+            raise urllib.error.HTTPError(request.full_url, 400, "Bad Request", {},
+                BytesIO(b'{"error":{"message":"Invalid size: never-print-this-key"}}'))
+        diagnostic = StringIO()
+        with redirect_stderr(diagnostic), self.assertRaises(RuntimeError):
+            OpenRouterImageClient("never-print-this-key", opener=fail_request).generate(
+                {"model": "meta/muse-image", "prompt": "neutral object"})
+        self.assertEqual(diagnostic.getvalue(), "OpenRouter image HTTP 400 (size-rejected)\n")
 
     def test_redacts_nested_alibaba_reference_data_from_run_metadata(self):
         request = {
