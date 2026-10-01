@@ -57,6 +57,7 @@ const exchangeWithPython = (request: Uint8Array, environment: NodeJS.ProcessEnv)
       stdio: ["pipe", "pipe", "pipe"],
     })
     const output: Buffer[] = []
+    let diagnostic = ""
     let outputBytes = 0
     let settled = false
     const finish = (callback: () => void): void => {
@@ -73,12 +74,15 @@ const exchangeWithPython = (request: Uint8Array, environment: NodeJS.ProcessEnv)
         output.push(Buffer.from(chunk))
       }
     })
-    child.stderr.on("data", () => undefined)
+    child.stderr.on("data", (chunk: Buffer) => { diagnostic = (diagnostic + chunk.toString("utf8")).slice(0, 8192) })
     child.on("error", () => finish(() => reject(new GenerationError(
       "ADAPTER_RESULT_INVALID",
       "The Python Qwen kernel process could not be started.",
     ))))
     child.on("close", (code) => finish(() => {
+      for (const line of diagnostic.split(/\r?\n/)) {
+        if (/^OpenRouter image HTTP [1-5]\d{2} \((authentication|quota|rate-limit|model-unavailable|size-rejected|reference-rejected|provider-error)\)$/.test(line)) console.error(line)
+      }
       const response = Buffer.concat(output)
       if (code === 0) resolve(response)
       else reject(adapterError(response) ?? new GenerationError(

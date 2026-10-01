@@ -9,6 +9,7 @@ import http.client
 import math
 import os
 import socket
+import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -130,6 +131,21 @@ class OpenRouterImageClient:
                     detail = error_value.strip()
             except (AttributeError, UnicodeDecodeError, json.JSONDecodeError):
                 pass
+            reason = detail.lower()
+            category = "provider-error"
+            if error.code in (401, 403):
+                category = "authentication"
+            elif error.code == 402:
+                category = "quota"
+            elif error.code == 429:
+                category = "rate-limit"
+            elif "endpoint" in reason or "unavailable" in reason:
+                category = "model-unavailable"
+            elif error.code == 400 and any(word in reason for word in ("size", "resolution", "aspect")):
+                category = "size-rejected"
+            elif error.code == 400 and any(word in reason for word in ("image", "reference")):
+                category = "reference-rejected"
+            print(f"OpenRouter image HTTP {error.code} ({category})", file=sys.stderr)
             suffix = f": {detail}" if detail else ""
             raise RuntimeError(
                 f"OpenRouter Image API returned HTTP {error.code}{suffix}"
